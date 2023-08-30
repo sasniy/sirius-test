@@ -1,0 +1,7 @@
+version: '3'
+services:
+  bot:
+    image: sasnayaletovka/sirius:deploy
+    environment:
+      - HF_TOKEN=YOUR_TOKEN
+      - TG_TOKEN=YOUR_TOKEN

@@ -1,24 +1,40 @@
 import requests
 import re
 
+FIRST_TOKEN = "@@ПЕРВЫЙ@@"
+SECOND_TOKEN = "@@ВТОРОЙ@@"
+
 
 def query(input_text, API_URL, headers, db, user_id):
-    text = input_text
     parameters = get_parameters()
     options = get_options()
-    user_messages, bot_messages = db.get_context(user_id)
-
-    payload = {"inputs": {
-        "past_user_inputs": user_messages,
-        "generated_responses": bot_messages,
-        "text": f'{text}'}, 'options': options, 'parameters': parameters}
-    # payload = {"inputs": f'@@ПЕРВЫЙ@@ Привет @@ВТОРОЙ@@ привет @@ПЕРВЫЙ@@ {text} @@ВТОРОЙ@@','options':options,'parameters':parameters}
-    response = requests.post(API_URL, headers=headers, json=payload).json()
-    print(response)
+    full_text = get_full_text(input_text, db, user_id)
+    payload = {"inputs": full_text, 'options': options, 'parameters': parameters}
+    response = requests.post(API_URL, headers=headers, json=payload).json()[0]
     answer = response['generated_text']
-    answer = answer.replace('@@ПЕРВЫЙ@@', '')
-    answer = answer.replace('@@ВТОРОЙ@@', '')
+    question, answer = preprocces_message(answer)
+    answer = answer.replace(FIRST_TOKEN, '')
+    answer = answer.replace(SECOND_TOKEN, '')
     return answer
+
+
+def get_full_text(input_text, db, user_id):
+    text = f'{FIRST_TOKEN} {input_text} {SECOND_TOKEN}'
+    user_messages, bot_messages = db.get_context(user_id)
+    user_messages = [f'{FIRST_TOKEN} {message}' for message in user_messages]
+    bot_messages = [f'{SECOND_TOKEN} {message}' for message in bot_messages]
+    context = list(zip(user_messages, bot_messages))[::-1]
+    full_text = ''
+    for first, second in context:
+        full_text += first + second
+    full_text += text
+    return full_text
+
+
+def preprocces_message(text):
+    first_text = text.split(FIRST_TOKEN)[0]
+    second_text = text.split(SECOND_TOKEN)[-1]
+    return first_text, second_text
 
 
 def get_options():
@@ -29,12 +45,17 @@ def get_options():
 
 def get_parameters():
     return {
-        'temperature': 1.0,
+        'max_new_tokens': 40,
+        'temperature': 1.2,
         'length_penalty': 1.0,
         'no_repeat_ngram_size': 2,
-        'eos_token_id':50257,
-        'do_sample':True,
-        'max_new_tokens':40
+        'do_sample': True,
+        'repetition_penalty': 1.2,
+        'eos_token_id': 50257,
+        'top_k': 50,
+        'top_p': 0.95,
+        'num_beams': 3,
+        'num_return_sequences': 3
     }
 
 

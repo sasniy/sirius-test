@@ -11,7 +11,6 @@ class Database:
                             f'"message_user"	TEXT,'
                             f'"message_bot"	TEXT,'
                             f'PRIMARY KEY("id" AUTOINCREMENT))')
-
     def connect(self):
         connection = sqlite3.connect('database.db')
         return connection
