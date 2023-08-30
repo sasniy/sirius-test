@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import logging
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, filters, MessageHandler
-from telegram import KeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
+from telegram import KeyboardButton, ReplyKeyboardMarkup
 from model_handler import get_headers, query
 from database_handler import Database
 
@@ -23,10 +23,14 @@ def get_from_env(key):
 url_tinkoff = 'https://api-inference.huggingface.co/models/tinkoff-ai/ruDialoGPT-medium'
 url_main = "https://api-inference.huggingface.co/models/SasnayaLetovka/tinkoff-zhientaev-model"
 
-BOT_TOKEN = get_from_env('BOT_TOKEN')
-HF_TOKEN = get_from_env('HUGGING_FACE_TOKEN')
-API_URL = url_main
+BOT_TOKEN = get_from_env('TG_TOKEN')
+HF_TOKEN = get_from_env('HF_TOKEN')
 
+BOT_TOKEN = os.getenv('TG_TOKEN', BOT_TOKEN)
+HF_TOKEN = os.getenv('HF_TOKEN', HF_TOKEN)
+
+
+API_URL = url_main
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     remove_context_button = [[KeyboardButton('Стереть контекст')]]
@@ -52,12 +56,12 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
                        headers=headers,
                        db=db,
                        user_id=user_id)
+
         if answer == '':
-            answer = 'Не знаю, что ответить'
+            answer = 'Не знаю, что ответить, спроси что-нибудь другое или стери контекст'
         db.add_context(user_id, message_id, user_text, answer)
         db.get_context(user_id)
     await context.bot.send_message(chat_id=update.effective_chat.id, text=answer)
-
 
 
 if __name__ == '__main__':
