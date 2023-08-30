@@ -17,7 +17,7 @@
 ```
 python -m pip install -r requirements.txt
 ```
-2) Создаете файл ".env", в нем прописываете HG_TOKEN = <ВАШ INFERENCE TOKEN С HUGGING FACE> и TG_TOKEN = <ВАШ ТОКЕН С @BotFather>
+2) Создаете файл ".env", в нем прописываете HF_TOKEN = <ВАШ INFERENCE TOKEN С HUGGING FACE> и TG_TOKEN = <ВАШ ТОКЕН С @BotFather>
 3) Запускаете main.py
 ### Через docker-compose
 Нужен скачанный docker
